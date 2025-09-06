@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Todos</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <link rel="stylesheet" href="todos.css">
+</head>
+
+<body>
+    <div class="container">
+    <h1> Your Todo's</h1>
+    <div class="box">
+        <div class="todo-input">
+    <input type="text" id="todo-title" placeholder="Enter your new todo" />
+
+    <button id="add-todo" onclick="addTodo()" >Add Todo</button></div>
+  
+    <ul id="todo-list"></ul>
+ 
+    <div id="message"></div>
+        </div>
+    <button id="logout" onclick="logout()">Logout</button>
+    </div>
+
+    <script>
+
+        //function for fetching your existing todos
+        async function fetchTodos() {
+
+            //verifying token
+            const token = localStorage.getItem('token');
+            if (!token) {
+                document.getElementById('message').innerText = 'You must sign in first.';
+                return;
+            }
+            try {
+                const response = await axios.get('http://localhost:3000/todos', {
+                    headers: { token: token } //sending the token in the header with the get request
+                });
+                displayTodos(response.data.todos);
+            } catch (error) {
+                document.getElementById('message').innerText = 'Failed to load todos.';
+                console.error(error);
+            }
+        }
+
+        //function for displaying todos
+        function displayTodos(todos) {
+            const todoList = document.getElementById('todo-list');
+            todoList.innerHTML = '';
+            todos.forEach(todo => {
+                //creating todo title
+                const li = document.createElement('li');
+
+                // creating checkbox to mark done /undone
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = todo.done;
+                checkbox.onchange = () => updateTodoDone(todo._id, checkbox.checked);
+                li.appendChild(checkbox);
+
+                //todo title text
+                const text = document.createTextNode(' ' + todo.title);
+                li.appendChild(text);
+
+
+                //delete button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.onclick = () => deleteTodo(todo._id);
+                li.appendChild(deleteBtn);
+
+                todoList.appendChild(li);
+
+            });
+        }
+
+
+        //function for adding a todo
+        async function addTodo() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                document.getElementById('message').innerText = 'You must sign in first.';
+                return;
+            }
+
+            const titleInput = document.getElementById('todo-title');
+            const title = titleInput.value.trim();
+            if (!title) {
+                alert('Please enter a todo title');
+                return;
+            }
+            try {
+                //sending the todo to backend
+                await axios.post('http://localhost:3000/todo',
+                    { title, done: false },
+                    { headers: { token: token } }
+                );
+
+                titleInput.value = '';
+                fetchTodos(); //reloading your todos
+
+                document.getElementById('message').innerHTML = 'Todo added successfully!';
+            } catch (error) {
+                document.getElementById('message').innerText = 'Failed to add todo.';
+                console.error(error);
+            }
+        }
+
+
+        async function updateTodoDone(todoId, done) {
+            //verifying token
+            const token = localStorage.getItem('token');
+            if (!token) {
+                document.getElementById('message').innerText = 'You must sign in first.';
+                return;
+            }
+            try {
+                await axios.patch(`http://localhost:3000/todo/${todoId}`,
+                    { done: done },
+                    { headers: { token: token } }
+                );
+                fetchTodos(); // refresh todo list
+            } catch (error) {
+                document.getElementById('message').innerText = 'Failed to update todo.';
+                console.error(error);
+            }
+        }
+
+        async function deleteTodo(todoId) {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                document.getElementById('message').innerText = 'You must sign in first.';
+                return;
+            }
+            try {
+                await axios.delete(`http://localhost:3000/todo/${todoId}`, {
+                    headers: { token: token }
+                });
+                fetchTodos(); // refresh todo list
+                document.getElementById('message').innerText = 'Todo deleted successfully!';
+            } catch (error) {
+                document.getElementById('message').innerText = 'Failed to delete todo.';
+                console.error(error);
+            }
+        }
+
+         function logout(){
+            
+  localStorage.removeItem('token');  // remove JWT token
+
+  window.location.href = 'sign-in.html';  // redirect to sign-in page
+
+         }
+        // Fetch todos on page load
+        window.onload = fetchTodos;
+
+
+    </script>
+
+
+</body>
+
+</html>

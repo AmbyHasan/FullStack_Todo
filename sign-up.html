@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignUp Form</title>
+  <link rel="stylesheet" href="sign-up.css">
+    <!-- enabling the axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+      <h1>Welcome to Todo App made by Amber Hasan</h1>
+    <div class="container">
+      
+        <h1>SignUp</h1>
+        <div class="box">
+    <form id="signup-form">
+        <input type="text" id="name" placeholder="Enter your name" required>
+        <input type="email" id="email" placeholder="Enter your email" required>
+        <input type="password" id="password" placeholder="Enter your password" required>
+        <button type="button" id ="sign_up" onclick="handleSignup()">Sign Up</button>
+        <div>Already SignedUp? <a href='sign-in.html'>SignIn</a></div>
+    </form>
+    <div id="signup-message"></div>
+    </div>
+    </div>
+
+    <!-- adding the js -->
+    <script>
+        async function handleSignup() {
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await axios.post('http://localhost:3000/signup', {
+                    name, email, password
+                });
+                //showing the status that we got from our backend
+                document.getElementById('signup-message').innerText = response.data.message;
+                setTimeout(() => {
+                    window.location.href = 'sign-in.html';
+                }, 1000);
+
+            } catch (error) {
+                document.getElementById('signup-message').innerText = error.response.data.message;
+                return ;
+            }
+        }
+    </script>
+
+
+
+
+</body>
+
+</html>

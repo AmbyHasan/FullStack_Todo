@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignIn Form</title>
+    <link rel="stylesheet" href="sign_in.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>SignIn</h1>
+        <div class="box">
+    <form id="signin-form">
+        <input type="email" id="email" placeholder="Enter your email" required><br>
+        <input type="password" id="password" placeholder="Enter Your password" required><br>
+        <button type="button" onclick="handleSignin()" id="SignIn">Sign In</button>
+    </form>
+    <div id="signin-message"></div>
+    
+    </div>
+    </div>
+
+    <script>
+        async function handleSignin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await axios.post('http://localhost:3000/signin', {
+                    email, password
+                });
+                document.getElementById('signin-message').innerText = 'Sign in Successful ';
+
+                //    storing the token for futher authentication
+                localStorage.setItem('token', response.data.token);
+
+                setTimeout(() => {
+                    window.location.href = 'todos.html';
+                }, 1000);
+
+
+
+            } catch (error) {
+                document.getElementById('signin-message').innerText = error.response.data.message;
+            }
+        }
+    </script>
+</body>
+
+</html>
